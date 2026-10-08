@@ -9,11 +9,8 @@ import {
 import { BackgroundBlur, VirtualBackground } from '@livekit/track-processors';
 import { isLocalTrack, LocalTrackPublication, Track } from 'livekit-client';
 
-// Background image paths
-const BACKGROUND_IMAGES = [
-  { name: 'Desk', path: Desk },
-  { name: 'Nature', path: Nature },
-];
+// Background image paths (empty: image backgrounds removed)
+const BACKGROUND_IMAGES: { name: string; path: { src: string } }[] = [];
 
 // Background options
 type BackgroundType = 'none' | 'blur' | 'image';
