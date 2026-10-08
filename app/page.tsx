@@ -4,7 +4,16 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import styles from '../styles/Home.module.css';
 
-const FAMILY_ROOM = 'family';
+// ဒီစာရင်းကို ကိုယ်ပြင်ပါ။
+// id = room နာမည် (အင်္ဂလိပ်စာလုံးအသေး၊ space မပါ၊ မထပ်ရ)
+// label = app ထဲမှာ ပြမယ့်နာမည်
+const GROUPS: { id: string; label: string }[] = [
+  { id: 'family', label: 'မိသားစုအားလုံး' },
+  { id: 'lay&nieces', label: 'တူ၊တူမများ' },
+  { id: 'we2', label: 'ခိုင်စ' },
+  { id: 'House', label: 'အိမ်အကြောင်း' },
+];
+
 const STORAGE_KEY = 'recent_rooms';
 
 function useRoomNames(room: string) {
@@ -28,7 +37,7 @@ function useRoomNames(room: string) {
       }
     };
     load();
-    const timer = setInterval(load, 5000);
+    const timer = setInterval(load, 8000);
     return () => {
       cancelled = true;
       clearInterval(timer);
@@ -42,6 +51,30 @@ function statusText(names: string[] | null) {
   if (names === null) return 'စစ်နေပါတယ်...';
   if (names.length === 0) return 'အခု ဘယ်သူမှ မရှိသေးပါ';
   return `ခေါ်ဆိုမှုထဲမှာ (${names.length}): ${names.join(', ')}`;
+}
+
+function GroupCard(props: { id: string; label: string; onJoin: (room: string) => void }) {
+  const names = useRoomNames(props.id);
+  const inCall = names !== null && names.length > 0;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        padding: '12px',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '10px',
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{props.label}</div>
+      <div style={{ fontSize: '14px' }}>{statusText(names)}</div>
+      <button className="lk-button" onClick={() => props.onJoin(props.id)}>
+        {inCall ? 'ဝင်မယ်' : 'ခေါ်မယ်'}
+      </button>
+    </div>
+  );
 }
 
 export default function Page() {
@@ -64,11 +97,12 @@ export default function Page() {
   }, []);
 
   const customRoom = custom.trim().toLowerCase().replace(/\s+/g, '-');
-  const familyNames = useRoomNames(FAMILY_ROOM);
   const customNames = useRoomNames(customRoom);
+  const customIn = customNames !== null && customNames.length > 0;
 
   const go = (room: string) => {
-    if (room !== FAMILY_ROOM) {
+    const isPreset = GROUPS.some((g) => g.id === room);
+    if (!isPreset) {
       const next = [room, ...recent.filter((r) => r !== room)].slice(0, 5);
       setRecent(next);
       try {
@@ -79,9 +113,6 @@ export default function Page() {
     }
     router.push(`/rooms/${encodeURIComponent(room)}`);
   };
-
-  const familyIn = familyNames !== null && familyNames.length > 0;
-  const customIn = customNames !== null && customNames.length > 0;
 
   return (
     <main className={styles.main} data-lk-theme="default">
@@ -94,30 +125,22 @@ export default function Page() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '28px',
+          gap: '16px',
           alignItems: 'center',
           width: '100%',
           maxWidth: '360px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-          <div style={{ textAlign: 'center', fontWeight: 600 }}>မိသားစုအားလုံး</div>
-          <div style={{ textAlign: 'center' }}>{statusText(familyNames)}</div>
-          <button
-            className="lk-button"
-            style={{ width: '100%', padding: '14px' }}
-            onClick={() => go(FAMILY_ROOM)}
-          >
-            {familyIn ? 'ဝင်မယ်' : 'Family room ခေါ်မယ်'}
-          </button>
-        </div>
+        {GROUPS.map((g) => (
+          <GroupCard key={g.id} id={g.id} label={g.label} onJoin={go} />
+        ))}
 
-        <hr style={{ width: '100%', borderColor: 'rgba(255, 255, 255, 0.15)', margin: 0 }} />
+        <hr style={{ width: '100%', borderColor: 'rgba(255, 255, 255, 0.15)', margin: '8px 0' }} />
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-          <div style={{ textAlign: 'center', fontWeight: 600 }}>ကိုယ်ကြိုက်တဲ့သူနဲ့ ခေါ်မယ်</div>
+          <div style={{ textAlign: 'center', fontWeight: 600 }}>တခြားသူနဲ့ ခေါ်မယ်</div>
           <div style={{ textAlign: 'center', fontSize: '14px', opacity: 0.8 }}>
-            ခေါ်မယ့်သူတွေ အားလုံး room နာမည် တူတူ ရိုက်ထည့်ပါ (ဥပမာ mom-dad)
+            ခေါ်မယ့်သူတွေ အားလုံး room နာမည် တူတူ ရိုက်ထည့်ပါ
           </div>
           <input
             type="text"
