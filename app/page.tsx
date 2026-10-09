@@ -191,7 +191,17 @@ export default function Page() {
   };
 
   return (
-    <main className={styles.main} data-lk-theme="default">
+        <main
+      className={styles.main}
+      data-lk-theme="default"
+      style={{
+        justifyContent: 'flex-start',
+        height: 'auto',
+        minHeight: '100vh',
+        paddingTop: '32px',
+        paddingBottom: '64px',
+      }}
+    >
       <div className="header">
         <h1 style={{ fontSize: '32px', margin: 0 }}>သမိုင်းမိသားစု</h1>
         <h2 style={{ marginTop: '8px' }}>မိသားစု video call</h2>
@@ -206,7 +216,13 @@ export default function Page() {
           width: '100%',
           maxWidth: '360px',
         }}
-      >
+      >        <a
+          href="/push-test"
+          className="lk-button"
+          style={{ textDecoration: 'none', textAlign: 'center', width: '100%' }}
+        >
+          Push စမ်းသပ်
+        </a>
         {GROUPS.map((g) => (
           <GroupCard key={g.id} id={g.id} label={g.label} onJoin={go} />
         ))}
