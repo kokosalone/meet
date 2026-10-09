@@ -1,14 +1,26 @@
 'use client';
 import React from 'react';
 
+type PushPlugin = {
+  addListener: (event: string, cb: (data: unknown) => void) => Promise<unknown>;
+  requestPermissions: () => Promise<{ receive: string }>;
+  register: () => Promise<void>;
+};
+
+type CapacitorWindow = Window & {
+  Capacitor?: {
+    isNativePlatform?: () => boolean;
+    Plugins?: { PushNotifications?: PushPlugin };
+  };
+};
+
 export default function PushTestPage() {
   const [log, setLog] = React.useState<string[]>([]);
   const [token, setToken] = React.useState('');
   const add = (m: string) => setLog((l) => [...l, m]);
 
   const start = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cap = (window as any).Capacitor;
+    const cap = (window as CapacitorWindow).Capacitor;
     if (!cap || !cap.isNativePlatform || !cap.isNativePlatform()) {
       add('ဒါက APK app မဟုတ်ပါ (browser မှာ ဖွင့်ထားတယ်)');
       return;
@@ -19,15 +31,13 @@ export default function PushTestPage() {
       return;
     }
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await push.addListener('registration', (t: any) => {
-        setToken(t.value);
+      await push.addListener('registration', (t) => {
+        const value = (t as { value?: string }).value || '';
+        setToken(value);
         add('token ရပါပြီ');
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await push.addListener('registrationError', (e: any) => add('error: ' + JSON.stringify(e)));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await push.addListener('pushNotificationReceived', (n: any) =>
+      await push.addListener('registrationError', (e) => add('error: ' + JSON.stringify(e)));
+      await push.addListener('pushNotificationReceived', (n) =>
         add('လက်ခံရပါပြီ: ' + JSON.stringify(n)),
       );
       const perm = await push.requestPermissions();
