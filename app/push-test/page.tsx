@@ -5,6 +5,15 @@ type PushPlugin = {
   addListener: (event: string, cb: (data: unknown) => void) => Promise<unknown>;
   requestPermissions: () => Promise<{ receive: string }>;
   register: () => Promise<void>;
+  createChannel: (channel: {
+    id: string;
+    name: string;
+    description?: string;
+    sound?: string;
+    importance?: number;
+    visibility?: number;
+    vibration?: boolean;
+  }) => Promise<void>;
 };
 
 type CapacitorWindow = Window & {
@@ -43,6 +52,20 @@ export default function PushTestPage() {
       const perm = await push.requestPermissions();
       add('permission: ' + perm.receive);
       if (perm.receive !== 'granted') return;
+      try {
+        await push.createChannel({
+          id: 'family_call',
+          name: 'မိသားစု ဖုန်းခေါ်ဆိုမှု',
+          description: 'ခေါ်ဆိုမှု ဝင်လာရင် ring မြည်ပါမယ်',
+          sound: 'family_ring.wav',
+          importance: 5,
+          visibility: 1,
+          vibration: true,
+        });
+        add('ring channel ဆောက်ပြီးပါပြီ (family_call)');
+      } catch (e) {
+        add('channel error: ' + String(e));
+      }
       await push.register();
     } catch (e) {
       add('error: ' + String(e));
