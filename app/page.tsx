@@ -112,3 +112,94 @@ function InviteButton(props: { room: string; label: string }) {
               href={l.href}
               target={l.blank ? '_blank' : undefined}
               rel="noopener noreferrer"
+              style={{ textDecoration: 'none' }}
+            >
+              {l.name}
+            </a>
+          ))}
+          <button className="lk-button" onClick={copy}>
+            {copied ? 'ကူးပြီး ✓' : 'ကူးယူမယ်'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GroupCard(props: { id: string; label: string; onJoin: (room: string) => void }) {
+  const names = useRoomNames(props.id);
+  const inCall = names !== null && names.length > 0;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+        width: '100%',
+        padding: '12px',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
+        borderRadius: '10px',
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{props.label}</div>
+      <div style={{ fontSize: '14px' }}>{statusText(names)}</div>
+      <button className="lk-button" onClick={() => props.onJoin(props.id)}>
+        {inCall ? 'ဝင်မယ်' : 'ခေါ်မယ်'}
+      </button>
+      <InviteButton room={props.id} label={props.label} />
+    </div>
+  );
+}
+
+export default function Page() {
+  const router = useRouter();
+  const [custom, setCustom] = React.useState('');
+  const [recent, setRecent] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          setRecent(list.filter((r) => typeof r === 'string').slice(0, 5));
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const customRoom = custom.trim().toLowerCase().replace(/\s+/g, '-');
+  const customNames = useRoomNames(customRoom);
+  const customIn = customNames !== null && customNames.length > 0;
+
+  const go = (room: string) => {
+    const isPreset = GROUPS.some((g) => g.id === room);
+    if (!isPreset) {
+      const next = [room, ...recent.filter((r) => r !== room)].slice(0, 5);
+      setRecent(next);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+    }
+    router.push(`/rooms/${encodeURIComponent(room)}`);
+  };
+
+  return (
+    <div
+      data-lk-theme="default"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        background: '#111',
+        color: '#fff',
+        display: 'flex',
+        flexDirection:
