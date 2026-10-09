@@ -202,4 +202,85 @@ export default function Page() {
         background: '#111',
         color: '#fff',
         display: 'flex',
-        flexDirection:
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: 'calc(env(safe-area-inset-top, 0px) + 24px) 16px 96px',
+        gap: '16px',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div style={{ textAlign: 'center' }}>
+        <h1 style={{ fontSize: '32px', margin: 0 }}>သမိုင်းမိသားစု</h1>
+        <h2 style={{ marginTop: '8px', fontSize: '16px', fontWeight: 400 }}>မိသားစု video call</h2>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+          alignItems: 'center',
+          width: '100%',
+          maxWidth: '360px',
+        }}
+      >
+        <button
+          className="lk-button"
+          style={{ width: '100%' }}
+          onClick={() => router.push('/push-test')}
+        >
+          Push စမ်းသပ်
+        </button>
+
+        {GROUPS.map((g) => (
+          <GroupCard key={g.id} id={g.id} label={g.label} onJoin={go} />
+        ))}
+
+        <hr style={{ width: '100%', borderColor: 'rgba(255, 255, 255, 0.15)', margin: '8px 0' }} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+          <div style={{ textAlign: 'center', fontWeight: 600 }}>တခြားသူနဲ့ ခေါ်မယ်</div>
+          <div style={{ textAlign: 'center', fontSize: '14px', opacity: 0.8 }}>
+            ခေါ်မယ့်သူတွေ အားလုံး room နာမည် တူတူ ရိုက်ထည့်ပါ
+          </div>
+          <input
+            type="text"
+            value={custom}
+            onChange={(e) => setCustom(e.target.value)}
+            placeholder="room နာမည်"
+            autoCapitalize="none"
+            autoCorrect="off"
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid #666',
+              background: '#111',
+              color: '#fff',
+              fontSize: '16px',
+            }}
+          />
+          {customRoom && <div style={{ textAlign: 'center' }}>{statusText(customNames)}</div>}
+          <button
+            className="lk-button"
+            style={{ width: '100%', padding: '14px' }}
+            disabled={!customRoom}
+            onClick={() => go(customRoom)}
+          >
+            {customIn ? 'ဝင်မယ်' : 'ခေါ်မယ်'}
+          </button>
+          {customRoom && <InviteButton room={customRoom} label={customRoom} />}
+
+          {recent.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+              {recent.map((r) => (
+                <button key={r} className="lk-button" onClick={() => setCustom(r)}>
+                  {r}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
