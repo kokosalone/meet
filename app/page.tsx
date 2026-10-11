@@ -60,10 +60,38 @@ function statusText(names: string[] | null) {
 function InviteButton(props: { room: string; label: string }) {
   const [open, setOpen] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
+  const [ringMsg, setRingMsg] = React.useState('');
 
   const fullMessage = () => `${inviteText(props.label)}\n${roomUrl(props.room)}`;
 
+  const ring = async () => {
+    let from = '';
+    try {
+      from = localStorage.getItem('family-name') || '';
+    } catch {
+      /* ignore */
+    }
+    if (!from) {
+      setRingMsg('ring မပို့ရသေးပါ - Push စမ်းသပ်မှာ နာမည်အရင် သိမ်းပါ');
+      return;
+    }
+    try {
+      const res = await fetch('/api/ring', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room: props.room, label: props.label, from }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 429) setRingMsg('ring ကို ခုမှပို့ထားပါတယ်၊ ခဏစောင့်ပါ');
+      else if (res.ok) setRingMsg(`ring ပို့ပြီးပါပြီ (${data.sent ?? 0} ဦး)`);
+      else setRingMsg('ring ပို့လို့မရပါ: ' + res.status);
+    } catch {
+      setRingMsg('ring ပို့ရာမှာ error ဖြစ်ပါတယ်');
+    }
+  };
+
   const invite = async () => {
+    ring();
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       try {
         await navigator.share({ text: inviteText(props.label), url: roomUrl(props.room) });
@@ -103,6 +131,7 @@ function InviteButton(props: { room: string; label: string }) {
       <button className="lk-button" onClick={invite}>
         ဖိတ်မယ်
       </button>
+      {ringMsg && <div style={{ fontSize: '13px', opacity: 0.8 }}>{ringMsg}</div>}
       {open && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {links().map((l) => (
