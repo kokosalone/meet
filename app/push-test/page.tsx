@@ -114,7 +114,7 @@ export default function PushTestPage() {
   };
 
   return (
-    <main style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <main style={{ padding: '56px 24px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
       <button
         onClick={goBack}
         style={{ alignSelf: 'flex-start', padding: '8px 14px', background: '#222', color: '#fff', borderRadius: '8px' }}
